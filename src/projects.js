@@ -1,25 +1,28 @@
-import {todo} from "./src/todo.js";
+import {format} from "date-fns";
 
 export class project {
 	constructor(title){
 		this.projectTitle = title;
-		this.project = [];
-		this.creationDate = Date.now();
-	}
-
-	deleteProject(id){
-		const index = project.indexOf(id);
-		if (index > -1){project.splice(index, 1)};
+		//a list of dues
+		this.todos = [];
+		this.creationDate = format(Date.now(), "MM-dd-yyyy");
 	}
 
 	editProjectTitle(title){
 		this.projectTitle = title;
 	}
 
+	deleteDue(id){
+		const index = this.todos.indexOf(id);
+		if (index > -1){this.todos.splice(index, 1)};
+	}
 
-	addDueToProject(){
-		const data = new FormData(//);
-		//get data from form and put them
+	addDue(todo){
+		this.todos.push(todo);
+	}
+
+	getTodos(){
+		return this.todos;
 	}
 	
 }

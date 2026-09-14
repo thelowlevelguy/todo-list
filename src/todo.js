@@ -1,5 +1,7 @@
+import {format} from "date-fns";
+
 export class todo{
-	priorities: ["high", "medium", "low"];
+	priorities =  ["high", "medium", "low"];
 	constructor(id ,subject, title, description, dueDate, priority){
 		this.id = crypto.randomUUID();
 		this.subject = subject;
@@ -7,7 +9,7 @@ export class todo{
 		this.dueDate = dueDate;
 		this.priority = priority;
 		this.status = "pending";
-		this.creationDate = Date.now()
+		this.creationDate = format(Date.now(), "MM-dd-yyyy");
 	}
 
 	editDue(property, newValue){
@@ -15,7 +17,7 @@ export class todo{
 			switch(property){
 			case "subject", "description": this.property = newValue;
 				break;
-			case "dueDate": this.changeDueState(newValue);
+			case "dueDate": this.changeDueDate(newValue);
 				break;
 			case "priority" : this.changeDuePriority(newValue);
 				break;
@@ -40,7 +42,7 @@ export class todo{
 		}
 	}
 
-	updateDueDate(newValue){
-
+	changeDueDate(newValue){
+		this.dueDate = format(newValue, "dd-MM-yyyy");
 	}
 }
