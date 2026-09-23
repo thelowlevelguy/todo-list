@@ -1,6 +1,6 @@
 import {format} from "date-fns";
 
-export class todo{
+export class Todo{
 	priorities =  ["high", "medium", "low"];
 	constructor(id ,subject, title, description, dueDate, priority){
 		this.id = crypto.randomUUID();

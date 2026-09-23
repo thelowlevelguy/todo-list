@@ -67,6 +67,7 @@
     "neo-async": "^2.6.2",
     "no-case": "^3.0.4",
     "node-releases": "^2.0.54",
+    "nvm": "^0.0.4",
     "p-limit": "^2.3.0",
     "p-locate": "^4.1.0",
     "p-try": "^2.2.0",

@@ -1,6 +1,6 @@
 import {format} from "date-fns";
 
-export class project {
+export class Project {
 	constructor(title){
 		this.projectTitle = title;
 		//a list of dues
