@@ -6,33 +6,40 @@
 	<title>Todo List</title>
 </head>
 <body>
-	<header>
-		<div id="header_logo">
-			<div id="header_logo-block">
-				<img id="header_logo-image" src="assets/images/mindcraft_logo.png">
+	<div id="content">		
+		<div class="header">
+			<div id="header_logo">
+				<div id="header_logo-block">
+					<img id="header_logo-image" src="assets/images/mindcraft_logo.png">
+				</div>
+				<div id="header_logo-name">Work'Up</div>
 			</div>
-			<div id="header_logo-name">Work'Up</div>
+			<div id="header_search">
+				<input type="text" name="search" id="header_search_input">
+				<img id="header_search-icon" src="assets/icons/header-icons/search.svg">
+			</div>
+			<div id="header_add">
+				<div>Add Item</div>
+				<img id="header_add-icon" src="assets/icons/header-icons/add.svg">
+			</div>
 		</div>
-		<div id="header_search">
-			<input type="text" name="search" id="header_search_input">
-			<img id="header_search-icon" src="assets/icons/header-icons/search.svg">
+		<div class="sidebar">
+			<div id="sidebar-section">
+				<div>OVERVIEW</div>
+				<div class="nav-section-boxes"></div>
+			</div>
+			<div id="todo-content">
+				<div>PROJECTS & DOMAINS</div>
+				<div class="todo-content-subject"></div>
+			</div>
 		</div>
-		<div id="header_add">
-			<div>Add Item</div>
-			<img id="header_add-icon" src="assets/icons/header-icons/add.svg">
+		<div class="section">
+			
 		</div>
-	</header>
-	<div id="content">
-		<div id="nav-section">
-			<div class="nav-section-boxes"></div>
-			<div class="nav-section-subjects"></div>
-		</div>
-		<div id="todo-content">
-			<div class="todo-content-subject"></div>
-			<div class="todo-content-projects"></div>
+		<div class="footer">
+			
 		</div>
 	</div>
-	
 <script src="./index.js" type="module"></script>
 </body>
 </html>

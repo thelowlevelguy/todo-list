@@ -7,10 +7,17 @@ body{
 	font-family: roboto, "sans-serif";
 }
 
-header{
-	background-color: #445;
+#content{
+	display: grid;
+	grid-template: 1fr 8fr 1fr/ 2fr 8fr;
+	grid-template-areas: "header header" "sidebar section" "footer footer";
+	height: 100vh;
+}
+
+.header{
+	grid-area: header;
+	background-color: #4CCDE1;
 	color: #fff;
-	height: 10vh;
 	padding: 0px 25px;
 	display: flex;
 	align-items: center;
@@ -38,7 +45,7 @@ header{
 	width: 45%;
 	align-items: center;
 	background-color: #fff;
-	border: 1px solid #445;
+	border: 1px solid none;
 	border-radius: 8px;
 }
 
@@ -48,6 +55,7 @@ header{
 	outline: none;
 	padding: 8px 12px;
 	font-size: 0.9rem;
+	color: #fff;
 	border: none;
 	background: none;
 	font-weight: 500;
@@ -61,10 +69,30 @@ header{
 	display: flex;
 	gap: 10px;
 	font-weight: 700;
+	padding: 8px 12px;
+	border-radius: 8px;
 }
 
-#header_add-icon,
+#header_add:hover {
+	background-color: rgb(155, 227, 238 , 0.5);
+	transition: ease-in 0.3s;
+}
+
 #header_search-icon,
 #header_logo:hover {
 	cursor: pointer;
+}
+
+.sidebar{
+	grid-area: sidebar;
+	background-color: #C2EEF5;
+}
+
+.section{
+	grid-area: section;
+	background-color: #E9F9FB; 
+}
+
+.footer{
+	grid-area: footer;
 }
