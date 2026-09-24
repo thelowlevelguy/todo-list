@@ -1,5 +1,7 @@
-import {project} from "./projects.js"
-import {todo} from "./todo.js";
+import "./style.css"
+import {Project} from "./projects.js"
+import {Todo} from "./todo.js";
+
 
 const appLogicControl = (() => {
 
