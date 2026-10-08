@@ -1,15 +1,14 @@
 import {format} from "date-fns";
 
 export class Project {
-	constructor(title){
-		this.projectTitle = title;
+	constructor(subject){
+		this.subject = subject;
 		//a list of dues
 		this.todos = [];
-		this.creationDate = format(Date.now(), "MM-dd-yyyy");
 	}
 
-	editProjectTitle(title){
-		this.projectTitle = title;
+	editProjectSubject(subject){
+		this.subject = subject;
 	}
 
 	deleteDue(id){

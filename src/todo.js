@@ -2,9 +2,9 @@ import {format} from "date-fns";
 
 export class Todo{
 	priorities =  ["high", "medium", "low"];
-	constructor(id ,subject, title, description, dueDate, priority){
+	constructor(title, description, dueDate, priority){
 		this.id = crypto.randomUUID();
-		this.subject = subject;
+		this.title = title;
 		this.description = description;
 		this.dueDate = dueDate;
 		this.priority = priority;
@@ -15,7 +15,7 @@ export class Todo{
 	editDue(property, newValue){
 		if (Object.hasOwn(this, property)){
 			switch(property){
-			case "subject", "description": this.property = newValue;
+			case "title", "description": this.property = newValue;
 				break;
 			case "dueDate": this.changeDueDate(newValue);
 				break;
@@ -29,7 +29,7 @@ export class Todo{
 	}
 
 	changeDueState(newValue){
-		this.status == "pending" ? "finished" : "pending"; 
+		this.status = newValue == "finished" ? "finished" : "pending"; 
 	}
 
 	changeDuePriority(newValue){
