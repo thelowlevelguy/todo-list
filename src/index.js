@@ -1,7 +1,9 @@
+import deleteIcon from "./assets/icons/header-icons/delete.svg";
+import editIcon from "./assets/icons/header-icons/edit.svg";
+
 import "./style.css"
 import {Project} from "./projects.js"
 import {Todo} from "./todo.js";
-
 
 const AppLogicControl = (() => {
 	
@@ -12,7 +14,6 @@ const AppLogicControl = (() => {
 		return JSON.parse(localStorage.getItem("projects"));
 	}
 
-	console.log(localStorage.getItem("projects"))
 	if (localStorage.getItem("projects") === null){
 		saveOnStorage([]);
 	}
@@ -36,6 +37,16 @@ const AppLogicControl = (() => {
 		projects.push(project);
 		saveOnStorage(projects);
 	}
+	
+	const editProject = (subject, newSubject) => {
+		const projects = getProjects();
+		projects.forEach(project => {
+			if (project.subject === subject){
+				project.subject = newSubject
+			}
+		})
+		saveOnStorage(projects);
+	}
 		
 	const deleteProject = (subject) => {
 		let projects = loadFromStorage();
@@ -53,7 +64,7 @@ const AppLogicControl = (() => {
 
 	const getProjects = () => loadFromStorage();
 
-	return  {addDueToProject, createNewProject, deleteProject, getProjects}
+	return  {addDueToProject, createNewProject, editProject, deleteProject, getProjects}
 
 })();
 
@@ -63,19 +74,36 @@ const AppDomControl = (() => {
 	const addProjectBtn = document.getElementById("sidebar-project-header");
 	const sidebarProjects = document.getElementById("sidebar-project-content");
 
-	const renderSidebarProjects = (projects) => {
-		console.log(projects)
-		const projectBlock = document.createElement("div")
+	const renderProjects = (projects) => {
+		sidebarProjects.innerHTML = "";
 		projects.forEach(project => {
+			const projectBlock = document.createElement("div")
+			projectBlock.classList.add("project-block")
+			projectBlock.dataset.project = project.subject;
+
 			const obj = document.createElement("div");
 			obj.classList.add("side-project");
-			obj.dataset.project = project.subject;
+			obj.dataset.subject = project.subject;
 			obj.textContent = project.subject;
+
+			const optionsBlock = document.createElement("div");
+			optionsBlock.dataset.option = "";
+
+			const deleteProject = document.createElement("div");
+			deleteProject.innerHTML = `<div><img src="${deleteIcon}" class="side-project-delete-option"></div>`
+
+			const editProject = document.createElement("div");
+			editProject.innerHTML = `<div><img src="${editIcon}" class="side-project-edit-option"></div>`
+
+			optionsBlock.appendChild(editProject)
+			optionsBlock.appendChild(deleteProject)
+
 			projectBlock.appendChild(obj);
+			projectBlock.appendChild(optionsBlock)
+			sidebarProjects.appendChild(projectBlock);
 		})
-		sidebarProjects.replaceChildren(projectBlock);
 	}
-	renderSidebarProjects(AppLogicControl.getProjects())
+	renderProjects(AppLogicControl.getProjects())
 
 	// const todoList = document.createElement("ul");
 	// 		todoList.classList.add("sidebar-todos");
@@ -88,7 +116,7 @@ const AppDomControl = (() => {
 	// 			todoList.appendChild(todoBlock);
 	// 		})
 
-	const addSidebarProject = () => {
+	const addProject = () => {
 		const dialog = document.createElement("dialog");
 		dialog.setAttribute("id", "new-project-dialog")
 		dialog.innerHTML = `
@@ -117,7 +145,7 @@ const AppDomControl = (() => {
 			const subject  = dialogForm.elements[0];
 			
 			AppLogicControl.createNewProject(subject.value)
-			renderSidebarProjects(AppLogicControl.getProjects())
+			renderProjects(AppLogicControl.getProjects())
 		    
 		    dialog.close();
 		    e.target.reset(); // Clear the form
@@ -125,12 +153,53 @@ const AppDomControl = (() => {
 		
 	}
 	
-	const addItemDialog = () => {
+	const editProject = (oldSubject) => {
 		const dialog = document.createElement("dialog");
-		dialog.setAttribute("id", "new-item-dialog")
+		dialog.setAttribute("id", "edit-project-dialog")
+		dialog.innerHTML = `
+			<h3>Edit Project</h3>
+			<form id="dialog-project-edit-form" method="dialog" style="display:flex; flex-direction:column; gap:10px;">
+				<div style="margin: 8px 0px;">
+					<label for="subject">Subject:</label><br>
+					<input type="text" id="subject" name="subject" value="${oldSubject}"; required placeholder="Enter project name..." style="width:100%; padding:6px; box-sizing:border-box;">
+				</div>
+				<div style="display:flex; justify-content:flex-end; gap:10px;">
+					<button type="button" id="project-form-cancel-btn">Cancel</button>
+					<button type="submit" id="project-form-save-btn">Add Project</button>
+				</div>
+			</form>
+		`;
+
+		dialogSection.innerHTML = "";
+		dialogSection.appendChild(dialog)
+		dialog.showModal();
+		dialog.querySelector("#project-form-cancel-btn").addEventListener("click", () => {
+		    dialog.close();
+		});
+
+		const dialogForm = document.querySelector("#dialog-project-edit-form");
+		dialogForm.addEventListener("submit", (e) => {
+			e.preventDefault();
+			const subject  = dialogForm.elements[0];
+			
+			AppLogicControl.editProject(oldSubject ,subject.value)
+			renderProjects(AppLogicControl.getProjects())
+		    
+		    dialog.close();
+		    e.target.reset();
+		})
+	}
+
+	const deleteProject = (subject) => {
+
+	}
+
+	const addTodo = (subject) => {
+		const dialog = document.createElement("dialog");
+		dialog.setAttribute("id", "new-todo-dialog")
 		dialog.innerHTML = `
 			<h3>ADD YOUR TASK</h3>
-			<form id="dialog-item-form" method="dialog" style="display:flex; flex-direction:column; gap:10px;">
+			<form id="dialog-todo-form" method="dialog" style="display:flex; flex-direction:column; gap:10px;">
 				<div style="margin: 8px 0px;">
 					<label for="title">Project Name:</label><br>
 					<input type="text" id="title" name="title" required placeholder="Enter project name..." style="width:100%; padding:6px; box-sizing:border-box;">
@@ -169,7 +238,7 @@ const AppDomControl = (() => {
 		});
 
 		// Example handling for form submission
-		const dialogForm = dialog.querySelector("#dialog-item-form");
+		const dialogForm = dialog.querySelector("#dialog-todo-form");
 		dialogForm.addEventListener("submit", (e) => {
 			e.preventDefault();
 			const { title, description, dueDate, priority } = dialogForm.elements;
@@ -181,16 +250,36 @@ const AppDomControl = (() => {
 			};
 		    
 		    // TODO: Add your logic here to save the project to your Todo list array/storage
-			AppLogicControl.addDueToProject(data)
-			renderSidebarProjects(AppLogicControl.projects)
+			AppLogicControl.addDueToProject(data, subject)
+			renderProjects(AppLogicControl.getProjects())
 		    
 		    dialog.close();
 		    e.target.reset(); // Clear the form
 		});
 	}	
 
-	addProjectBtn.addEventListener("click", () => { addSidebarProject(); });
+	const editTodo = () => {
 
+	}
+
+	const deleteTodo = () => {}
+
+	addProjectBtn.addEventListener("click", () => { addProject(); });
+
+	sidebarProjects.addEventListener("click", (e) => {
+		const block = e.target.closest("[data-project]")
+		if (block){
+			if (e.target.closest("[data-option]")){
+				if (e.target.closest(".side-project-edit-option")){
+					editProject(block.dataset.project);  
+				}else if (e.target.closest(".side-project-delete-option")){
+					deleteProject(block.dataset.project)
+				}
+			}else if (e.target.closest("[data-subject]")){
+				addTodo(block.dataset.project);  
+			} 
+		} 		 
+	});
 })();
 
 
