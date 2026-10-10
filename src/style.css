@@ -204,7 +204,8 @@ hr {
 }
 
 #new-project-dialog,
-#edit-project-dialog{
+#edit-project-dialog,
+#project-delelte-dialog{
 	margin: auto;
 	width: 35%;
 	height: 30%;

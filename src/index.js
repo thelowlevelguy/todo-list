@@ -39,7 +39,7 @@ const AppLogicControl = (() => {
 	}
 	
 	const editProject = (subject, newSubject) => {
-		const projects = getProjects();
+		const projects = loadFromStorage();
 		projects.forEach(project => {
 			if (project.subject === subject){
 				project.subject = newSubject
@@ -50,15 +50,12 @@ const AppLogicControl = (() => {
 		
 	const deleteProject = (subject) => {
 		let projects = loadFromStorage();
-		for (let project in projects){
-			if (project.projectTitle === subject){
-				const index = projects.indexOf(project)
-				if (index > -1){
-					projects.splice(index, 1);
-					break;
-				}
-			};
-		}
+		projects.forEach((project, index) => {
+			if (project.subject === subject){
+				projects.splice(index, 1);
+				return;
+			}
+		})
 		saveOnStorage(projects);
 	}
 
@@ -191,7 +188,30 @@ const AppDomControl = (() => {
 	}
 
 	const deleteProject = (subject) => {
-
+		const dialog = document.createElement("dialog");
+		dialog.setAttribute("id", "project-delelte-dialog");
+		dialog.innerHTML = `
+			<h3>Delete The Project</h3>
+			<form id="dialog-project-delete-form" method="dialog" style="display:flex; flex-direction:column; gap:10px;">
+				<div style="display:flex; justify-content:flex-end; gap:10px;">
+					<button type="button" id="project-form-cancel-btn">Cancel</button>
+					<button type="submit" id="project-form-delete-btn">Delete</button>
+				</div>
+			</form>
+		`
+		dialogSection.innerHTML = "";
+		dialogSection.appendChild(dialog);
+		dialog.showModal();
+		dialog.querySelector("#project-form-cancel-btn").addEventListener("click", () => {
+		    dialog.close();
+		});
+		const dialogForm = document.querySelector("#dialog-project-delete-form");
+		dialogForm.addEventListener("submit", (e) => {
+			e.preventDefault();
+			AppLogicControl.deleteProject(subject);
+			renderProjects(AppLogicControl.getProjects());
+			dialog.close();
+		})
 	}
 
 	const addTodo = (subject) => {
