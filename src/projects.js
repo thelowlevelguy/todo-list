@@ -16,10 +16,6 @@ export class Project {
 		if (index > -1){this.todos.splice(index, 1)};
 	}
 
-	addDue(todo){
-		this.todos.push(todo);
-	}
-
 	getTodos(){
 		return this.todos;
 	}

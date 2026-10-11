@@ -1,5 +1,6 @@
 import deleteIcon from "./assets/icons/header-icons/delete.svg";
 import editIcon from "./assets/icons/header-icons/edit.svg";
+import addIcon from "./assets/icons/header-icons/add.svg"
 
 import "./style.css"
 import {Project} from "./projects.js"
@@ -15,24 +16,25 @@ const AppLogicControl = (() => {
 	}
 
 	if (localStorage.getItem("projects") === null){
-		saveOnStorage([]);
+		const defaultPoject = new Project("default");
+		console.log(defaultPoject)
+		saveOnStorage([defaultPoject]);
 	}
 
-	const addDueToProject = ({title, description, dueDate, priority}, project) => {
-		const todo = new Todo(title, description, dueDate, priority)
-		project.addDue(todo);
+	const addDueToProject = (data, subject) => {
 		let projects = loadFromStorage();
-		projects.push(project);
+		const project = projects.find(p => p.subject === subject)
+		if (!project) return 
+		const todo = new Todo(data.title, data.description, data.dueDate, data.priority)
+		projects.todos.push(todo);
 		saveOnStorage(projects);
 	}
+
 	// create a new project only it didn't already exist
 	const createNewProject = (subject) => {
 		let projects = loadFromStorage();
-		for (let project in projects){
-			if (project.subject === subject){
-				return;
-			}
-		}
+		const exist = projects.some(p => p.subject === subject)
+		if (exist) return
 		const project = new Project(subject)
 		projects.push(project);
 		saveOnStorage(projects);
@@ -43,6 +45,7 @@ const AppLogicControl = (() => {
 		projects.forEach(project => {
 			if (project.subject === subject){
 				project.subject = newSubject
+				return
 			}
 		})
 		saveOnStorage(projects);
@@ -70,6 +73,7 @@ const AppDomControl = (() => {
 	const dialogSection = document.getElementById("dialog-section");
 	const addProjectBtn = document.getElementById("sidebar-project-header");
 	const sidebarProjects = document.getElementById("sidebar-project-content");
+	const projectTodosSection = document.getElementById("project-todos-section");
 
 	const renderProjects = (projects) => {
 		sidebarProjects.innerHTML = "";
@@ -101,17 +105,6 @@ const AppDomControl = (() => {
 		})
 	}
 	renderProjects(AppLogicControl.getProjects())
-
-	// const todoList = document.createElement("ul");
-	// 		todoList.classList.add("sidebar-todos");
-		
-	// 		project.todos.map(todo => {
-	// 			const todoBlock = document.createElement("p");
-	// 			todoBlock.classList.add("sidebar-todo", `priority-${todo.priority}`);
-	// 			todoBlock.dataset.todo = todo.id;
-	// 			todoBlock.textContent = todo.title;
-	// 			todoList.appendChild(todoBlock);
-	// 		})
 
 	const addProject = () => {
 		const dialog = document.createElement("dialog");
@@ -271,7 +264,7 @@ const AppDomControl = (() => {
 		    
 		    // TODO: Add your logic here to save the project to your Todo list array/storage
 			AppLogicControl.addDueToProject(data, subject)
-			renderProjects(AppLogicControl.getProjects())
+			renderTodos(subject)
 		    
 		    dialog.close();
 		    e.target.reset(); // Clear the form
@@ -281,10 +274,45 @@ const AppDomControl = (() => {
 	const editTodo = () => {
 
 	}
+	const renderTodos = (project) => {
+		projectTodosSection.innerHTML = `
+			<div class="todo-header">
+				<h2 class="todos-title">${escapeHTML(project.subject)}</h2>
+				<div id="todo-add-block"><img src="${addIcon}" id="todo-add" alt="Add">New Todo</div>
+			</div>
+			<div class="todo-list">
+				${project.todos.map(todo => `
+					<div class="todo-item priority-${escapeHTML(todo.priority)}" data-todo-id="${escapeHTML(todo.id)}">
+						<img src="${todoIcon}" class="todo-icon" alt="">
+						<div class="todo-info">
+							<h4 class="todo-title">${escapeHTML(todo.title)}</h4>
+							<span class="todo-date">${escapeHTML(todo.dueDate)}</span>
+						</div>
+						<div class="todo-options">
+							<img src="${editIcon}" class="todo-edit" alt="Edit">
+							<img src="${deleteIcon}" class="todo-delete" alt="Delete">
+						</div>
+					</div>
+				`).join("")}
+			</div>
+		`;
+
+		document.querySelector("#todo-add-block").addEventListener("click", () => {
+			addTodo(project.subject)
+		})
+	};	
 
 	const deleteTodo = () => {}
 
 	addProjectBtn.addEventListener("click", () => { addProject(); });
+
+	const escapeHTML = (str = "") =>
+	String(str)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+
 
 	sidebarProjects.addEventListener("click", (e) => {
 		const block = e.target.closest("[data-project]")
@@ -296,10 +324,16 @@ const AppDomControl = (() => {
 					deleteProject(block.dataset.project)
 				}
 			}else if (e.target.closest("[data-subject]")){
-				addTodo(block.dataset.project);  
+				const projects = AppLogicControl.getProjects()
+				projects.forEach(project => {
+					if (project.subject === block.dataset.project){
+						renderTodos(project);  
+					}
+				})
 			} 
 		} 		 
 	});
+
 })();
 
 
