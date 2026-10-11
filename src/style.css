@@ -239,7 +239,7 @@ hr {
 #project-todos-section{
 	display: flex;
 	flex-direction: column;
-	width: 50%;
+	width: 60%;
 	margin: auto;
 	margin-top: 20px;
 	padding: 20px;
@@ -257,7 +257,6 @@ hr {
 	filter: brightness(0);
 }
 
-
 #todo-add-block{
 	display: flex;
 	align-items: center;
@@ -270,6 +269,82 @@ hr {
 	cursor: pointer;
 	transition: ease-in 0.4s;
 }
+
+.todo-item{
+	display: flex;
+	justify-content: space-between;
+	margin: 20px;
+	padding: 8px 24px;
+	border-bottom: 2px solid #9c9898;
+	border-left: 2px solid #eeacac;
+	border-radius: 5px;
+}
+
+.todo-item.priority-low {
+	border-left-color: #5cb85c;
+}
+
+.todo-item.priority-medium {
+	border-left-color: #f0ad4e;
+}
+
+.todo-item.priority-high {
+	border-left-color: #d9534f;
+}
+
+.todo-essentials{
+	display: flex;
+	gap: 30px;
+}
+
+.todo-info {
+	display: flex;
+	flex-direction: column;
+	gap: 5px
+}
+
+.todo-icon,
+.todo-edit,
+.todo-delete{
+	width: 18px;
+	height: 18px;
+	filter: brightness(0.7);
+}
+
+.todo-icon:hover,
+.todo-edit:hover,
+.todo-delete:hover{
+	width: 18px;
+	height: 18px;
+	filter: brightness(0.4);
+	transition: ease-in 0.3s;
+	cursor: pointer;
+}
+
+.todo-status{
+	display: flex;
+	flex-direction: column;
+}
+
+.todo-item.finished .todo-title {
+	text-decoration: line-through;
+	opacity: 0.6;
+}
+
+.todo-item.finished .todo-descritption {
+	opacity: 0.6;
+}
+
+.todo-status .todo-date{
+	font-size: small;
+	font-style: italic;
+}
+
+.todo-options {
+	display: flex;
+	gap: 20px;
+}
+
 
 .footer{
 	grid-area: footer;
