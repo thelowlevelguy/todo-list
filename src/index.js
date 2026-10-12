@@ -2,8 +2,9 @@ import deleteIcon from "./assets/icons/header-icons/delete.svg";
 import editIcon from "./assets/icons/header-icons/edit.svg";
 import addIcon from "./assets/icons/header-icons/add.svg"
 import todoIcon from "./assets/icons/todo-icons/check-box.svg"
-import todoCheckedIcon from "./assets/icons/todo-icons/check-box.svg"
+import todoCheckedIcon from "./assets/icons/todo-icons/task.svg"
 
+import { format, parseISO, isValid } from "date-fns";
 import "./style.css"
 import {Project} from "./projects.js"
 import {Todo} from "./todo.js";
@@ -17,11 +18,10 @@ const AppLogicControl = (() => {
 		return JSON.parse(localStorage.getItem("projects"));
 	}
 
-	if (localStorage.getItem("projects") === null){
-		const defaultPoject = new Project("default");
-		const todo = new Todo("test", "make your first todo", "01/01/1970", "low")
-		defaultPoject.todos.push(todo);
-		saveOnStorage([defaultPoject]);
+	if (localStorage.getItem("projects")  === null || localStorage.getItem("projects") === "[]"){
+		const defaultProject = new Project("default");
+		defaultProject.todos.push(new Todo("test", "make your first todo", "", "low"));
+		saveOnStorage([defaultProject]);	
 	}
 
 	const addDueToProject = (data, subject) => {
@@ -54,16 +54,73 @@ const AppLogicControl = (() => {
 		
 	const deleteProject = (subject) => {
 		let projects = loadFromStorage();
-		const index = projects.findIndex(p => p === subject);
+		const index = projects.findIndex(p => p.subject === subject);
 		//index -1 mean no result
 		if (index < 0) return 
 		projects.splice(index, 1);
 		saveOnStorage(projects);
 	}
 
+	const editDue = (subject, todoId, title , description, dueDate, priority) =>{	
+		const projects = loadFromStorage()
+		const project = projects.find(p => p.subject === subject)
+		if (!project) return
+
+		const index = project.todos.findIndex(obj => obj.id === todoId);
+		if (index === -1) return 
+
+		project.todos[index].title = title;
+		project.todos[index].description = description;
+		project.todos[index].dueDate = changeDueDate(dueDate);
+		project.todos[index].priority = priority;
+
+		saveOnStorage(projects)
+	}
+
+	const toggleDue = (subject, todoId) => {
+		const projects = loadFromStorage()
+		const project = projects.find(p => p.subject === subject)
+		if (!project) return
+
+		const index = project.todos.findIndex(obj => obj.id === todoId);
+		if (index === -1) return 
+
+		const currentStatus = project.todos[index].status;
+    	project.todos[index].status = currentStatus === "finished" ? "pending" : "finished";
+		saveOnStorage(projects) 
+	}
+
+	const changeDueDate = (value) => {
+		if (!value) return "No date";
+		const date = parseISO(value);             
+		return isValid(date) ? format(date, "dd/MM/yyyy") : "No date";
+	};
+
+	const deleteDue = (subject, todoId) => {
+		const projects = loadFromStorage();
+		const project = projects.find(p => p.subject === subject)
+		if (!project) return
+		project.todos.map((obj, index) => {
+			if (obj.id === todoId){
+				project.todos.splice(index, 1)
+				saveOnStorage(projects)
+			}
+		})
+	}
+
+	const getDue = (subject, todoId) =>  {
+		const projects = loadFromStorage();
+		const project = projects.find(p => p.subject === subject)
+		if (!project) return
+		const todo = project.todos.find(obj => obj.id === todoId);
+		if(!todo) return
+		console.log(todo)
+		return todo;
+	}
+
 	const getProjects = () => loadFromStorage();
 
-	return  {addDueToProject, createNewProject, editProject, deleteProject, getProjects}
+	return  {addDueToProject, createNewProject, editProject, deleteProject, getProjects, deleteDue, editDue, toggleDue, getDue}
 
 })();
 
@@ -172,8 +229,10 @@ const AppDomControl = (() => {
 			const subject  = dialogForm.elements[0];
 			
 			AppLogicControl.editProject(oldSubject ,subject.value)
+			cleanProjectTodosSection(oldSubject)
 			renderProjects(AppLogicControl.getProjects())
 		    
+
 		    dialog.close();
 		    e.target.reset();
 		})
@@ -201,12 +260,13 @@ const AppDomControl = (() => {
 		dialogForm.addEventListener("submit", (e) => {
 			e.preventDefault();
 			AppLogicControl.deleteProject(subject);
+			cleanProjectTodosSection(subject)
 			renderProjects(AppLogicControl.getProjects());
 			dialog.close();
 		})
 	}
 
-	const addTodo = (subject) => {
+	const addDue = (subject) => {
 		const dialog = document.createElement("dialog");
 		dialog.setAttribute("id", "new-todo-dialog")
 		dialog.innerHTML = `
@@ -264,15 +324,69 @@ const AppDomControl = (() => {
 		    // TODO: Add your logic here to save the project to your Todo list array/storage
 			AppLogicControl.addDueToProject(data, subject)
 			const project = AppLogicControl.getProjects().find(p => p.subject === subject);
-			if (project) renderTodos(project);
+			if (project) renderDues(project);
 		    
 		    dialog.close();
 		    e.target.reset(); // Clear the form
 		});
-	}	
+	}
+	
+	const editDue = (subject, todoId) => {
+		const todo = AppLogicControl.getDue(subject, todoId);
+		if (!todo) return;
 
-	const editTodo = () => {
+		const dialog = document.createElement("dialog");
+		dialog.setAttribute("id", "todo-edit-dialog")
+		dialog.innerHTML = `
+			<h3>EDIT YOUR TASK</h3>
+			<form id="dialog-todo-form" method="dialog" style="display:flex; flex-direction:column; gap:10px;">
+				<div style="margin: 8px 0px;">
+					<label for="title">Title:</label><br>
+					<input type="text" id="title" name="title" value="${escapeHTML(todo.title)}" required placeholder="Enter task title..." style="width:100%; padding:6px; box-sizing:border-box;">
+				</div>
+				<div>
+					<label for="description">Description (Optional):</label><br>
+					<textarea id="description" name="description" placeholder="Enter details..." style="width:100%; padding:6px; box-sizing:border-box;">${escapeHTML(todo.description)}</textarea>
+				</div>
+				<div>
+					<label for="dueDate">Set a date</label><br>
+					<input id="dueDate" name="dueDate" type="date" value="${todo.dueDate || ""}" style="width:100%; padding:6px; box-sizing:border-box;">
+				</div>
+				<div>
+					<label for="priority">Priority</label><br>
+					<select id="priority" name="priority" style="width:100%; padding:6px; box-sizing:border-box;">
+						<option value="low" ${todo.priority === "low" ? "selected" : ""}>Low</option>
+						<option value="medium" ${todo.priority === "medium" ? "selected" : ""}>Medium</option>
+						<option value="high" ${todo.priority === "high" ? "selected" : ""}>High</option>
+					</select>
+				</div>
+				<div style="display:flex; justify-content:flex-end; gap:10px;">
+					<button type="button" id="todo-form-cancel-btn">Cancel</button>
+					<button type="submit" id="todo-form-save-btn">Save Changes</button>
+				</div>
+			</form>
+		`;
 
+		dialogSection.appendChild(dialog);
+		dialog.showModal();
+
+		dialog.querySelector("#todo-form-cancel-btn").addEventListener("click", () => {
+			dialog.close();
+			dialog.remove(); // Clean up element from DOM
+		});
+
+		const dialogForm = dialog.querySelector("#dialog-todo-form");
+		dialogForm.addEventListener("submit", (e) => {
+			e.preventDefault();
+			const { title, description, dueDate, priority } = dialogForm.elements;
+		
+			AppLogicControl.editDue(subject, todoId, title.value, description.value, dueDate.value, priority.value);
+			const project = AppLogicControl.getProjects().find(p => p.subject === subject);
+			if (project) renderDues(project);
+			
+			dialog.close();
+			dialog.remove();
+		});
 	}
 
 	const escapeHTML = (str = "") =>
@@ -282,10 +396,10 @@ const AppDomControl = (() => {
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;");
 
-	const renderTodos = (project) => {
+	const renderDues = (project) => {
 		projectTodosSection.innerHTML = `
 			<div class="todo-header">
-				<h2 class="todos-title">${escapeHTML(project.subject)}</h2>
+				<h2 class="todos-title" id="${escapeHTML(project.subject)}">${escapeHTML(project.subject)}</h2>
 				<div id="todo-add-block"><img src="${addIcon}" id="todo-add" alt="Add">New Todo</div>
 			</div>
 			<div class="todo-list">
@@ -312,14 +426,17 @@ const AppDomControl = (() => {
 			</div>
 		`
 		document.querySelector("#todo-add-block").addEventListener("click", () => {
-			addTodo(project.subject)
+			addDue(project.subject)
 		})
 	};	
 
-	const deleteTodo = () => {}
+	const cleanProjectTodosSection = (subject) => {
+		const doc = projectTodosSection.querySelector(`#${escapeHTML(subject)}`);
+		if (doc) projectTodosSection.innerHTML = '';
+	}
 
 	const project = AppLogicControl.getProjects().find(p => p.subject === "default");
-	if (project) renderTodos(project)
+	if (project) renderDues(project)
 
 	addProjectBtn.addEventListener("click", () => { addProject(); });
 
@@ -334,11 +451,31 @@ const AppDomControl = (() => {
 				}
 			}else {
 				const project = AppLogicControl.getProjects().find(p => p.subject === block.dataset.project);
-				if (project) renderTodos(project);  
+				if (project) renderDues(project);  
 			}
 		} 		 
 	});
 
+	projectTodosSection.addEventListener("click", (e) => {
+		const todoItem = e.target.closest("[data-todo-id]");
+		if (!todoItem)  return 
+		const todoId = todoItem.dataset.todoId;
+		const subject = projectTodosSection.querySelectorAll(".todos-title")[0].textContent;
+		
+		if (e.target.closest(".todo-icon")) {
+			AppLogicControl.toggleDue(subject, todoId);
+			const project = AppLogicControl.getProjects().find(p => p.subject == subject)
+			if (!project) return
+			renderDues(project)
+		}else if (e.target.closest(".todo-edit")) {
+			editDue(subject, todoId);
+		}else if (e.target.closest(".todo-delete")) {
+			AppLogicControl.deleteDue(subject, todoId);
+			const project = AppLogicControl.getProjects().find(p => p.subject == subject)
+			if (!project) return
+			renderDues(project)
+		}
+	})
 })();
 
 
