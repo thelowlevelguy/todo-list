@@ -9,6 +9,8 @@ body{
 
 #content{
 	display: grid;
+	width: 70%;
+	margin: auto;
 	grid-template: 1fr 8fr 1fr/ 2fr 8fr;
 	grid-template-areas: "header header" "sidebar section" "footer footer";
 	height: 100vh;
@@ -20,7 +22,6 @@ body{
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	background-color: #cdc8c8;
 }
 
 #header_logo{
